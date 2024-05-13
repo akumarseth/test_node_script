@@ -1,5 +1,13 @@
 const { Client } = require("pg");
 
+const express = require('express')
+
+const app = express()
+port = 4000
+
+app.use(express.json())
+
+
 const user_db_connection =
   "postgres://postgres:ind123@localhost:5432/akhil_db";
 const db_constructor = new Client({ connectionString: user_db_connection });
@@ -112,17 +120,79 @@ async function delete_existingProductData(product_id) {
   }
 }
 
-async function main() {
-  // Can we use async everywhere?
-  console.log("Main Function is getting executed!");
-//   await connectDatabase();
-//   await create_newTable();
-//   await insert_newProductData("Green Tea", "A soothing blend of organic green leaves.","2024-12-31");
-  await read_existingProductData();
-//   await update_existingProductData(3, "Green Tea updated 3", "description update");
-//   await delete_existingProductData(3);
+// async function main() {
+//   // Can we use async everywhere?
+//   console.log("Main Function is getting executed!");
+// //   await connectDatabase();
+// //   await create_newTable();
+// //   await insert_newProductData("Green Tea", "A soothing blend of organic green leaves.","2024-12-31");
 //   await read_existingProductData();
+// //   await update_existingProductData(3, "Green Tea updated 3", "description update");
+// //   await delete_existingProductData(3);
+// //   await read_existingProductData();
 
-}
+// }
 
-main();
+// main();
+
+app.post('/products', async(req, res) => {
+  let {name, description,date} = req.body
+  console.log(name)
+  console.log(description)
+  console.log(date)
+  const insert_newProductDataQuery = `INSERT INTO react_schema.product (product_name, description, exp_date)
+  VALUES ($1, $2, $3);`;
+
+  try {
+    await db_constructor.query(insert_newProductDataQuery, [
+      name,
+      description,
+      date,
+    ]);
+    console.log("New Product Data Inserted!");
+    res.status(200).send(`product ${name} added to db successfully`)
+  } catch (error) {
+    console.log("Failed to insert new product Data", error);
+  }
+})
+
+app.get('/products/:id', async(req, res) => {
+
+  let req_id = req.params.id
+  const read_existingProductDataQuery = `SELECT * FROM react_schema.product where id= ${req_id};`;
+
+  try {
+    const result = await db_constructor.query(read_existingProductDataQuery);
+    console.log("Read the existing Data!");
+    console.log(result.rows);
+    res.status(200).send(result.rows)
+  } catch (error) {
+    console.log("Failed to read the existing Data", error);
+  }
+})
+
+app.get('/products', async(req, res) => {
+  const read_existingProductDataQuery = `SELECT id, product_name, description, exp_date
+  FROM react_schema.product;`;
+
+  try {
+    const result = await db_constructor.query(read_existingProductDataQuery);
+    console.log("Read the existing Data!");
+    console.log(result.rows);
+    res.status(200).send(result.rows)
+
+  } catch (error) {
+    console.log("Failed to read the existing Data", error);
+  }
+})
+
+app.get('/', async(req, res) =>{
+  console.log('test')
+  res.status(200).send('APi is up and running')
+})
+
+
+app.listen(port, async() => {
+  console.log(`Express API is up and running on port ${port}`)
+  await connectDatabase();
+})
