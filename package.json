@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node pg_crud_script.js",
+    "start": "node productController.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
